@@ -1,5 +1,19 @@
 # VoiceAdmin Demo — Prior Authorization Agent
 
+## Session Log
+**Saturday session — completed**
+- Built: models.py, mock_payer/portal.py + ivr.py, sample_data PDF generator + fixture, document_reader.py, payer_contact.py, orchestrator.py, run.py
+- Verified end-to-end: `python run.py --input sample_data/sample_note.pdf` returns APPROVED via IVR fallback with exit 0; missing-PDF returns PENDING_INFO with exit 1
+- Key design decisions: deterministic IVR text simulation (real telephony is a deliberate Sunday addition); 4xx → PENDING_INFO no-fallback; channel-prefixed traces; orchestrator owns trace assembly
+- Architecture seam ready for tomorrow's voice variant: orchestrator._dispatch has the elif slot; payer_contact._decision_from_ivr is reusable; run.py's --channel already accepts "voice"
+
+**Sunday plan**
+- Build agents/voice_payer_contact.py using Twilio (TwiML <Say> + <Gather>) implementing the same IVR tree
+- Wrap as FastAPI service: POST /prior-auth accepts PDF upload, returns PADecision JSON
+- Containerize with Dockerfile + docker-compose
+- Deploy to Fly.io (free tier)
+- Update README with architecture diagram, demo trace, and live URL
+
 ## Project Goal
 A weekend demo project that simulates a multi-agent system for handling healthcare Prior Authorization (PA) requests. Given a clinical note (PDF), the system extracts structured info, contacts a mock insurance payer (via API or simulated IVR fallback), and returns an approval decision. This is a portfolio piece, not production code.
 
