@@ -33,6 +33,6 @@ class PADecision(BaseModel):
 
     status: Literal["APPROVED", "DENIED", "PENDING_INFO"]
     reference_number: str | None = None
-    channel_used: Literal["portal", "ivr"]
+    channel_used: Literal["portal", "ivr", "voice"]
     trace: list[str] = Field(default_factory=list)
     reason: str | None = None

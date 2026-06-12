@@ -16,19 +16,21 @@ from rich import print as rprint
 from agents.document_reader import read_document
 from agents.models import PADecision, PARequest
 from agents.payer_contact import contact_payer
+from agents.voice_payer_contact import contact_payer_voice
 
-Channel = Literal["auto", "portal_then_ivr"]
+Channel = Literal["auto", "portal_then_ivr", "voice"]
 
 
 def _dispatch(channel: Channel, request: PARequest) -> PADecision:
     """Route the request to a payer-contact implementation by channel.
 
-    "auto" and "portal_then_ivr" are currently aliases. Adding tomorrow's voice
-    channel is a single branch here (``elif channel == "voice": ...``), not a
-    refactor.
+    "auto" and "portal_then_ivr" are aliases for the text channel (portal then
+    IVR fallback); "voice" places a real Twilio call via the same IVR tree.
     """
     if channel in ("auto", "portal_then_ivr"):
         return contact_payer(request)
+    if channel == "voice":
+        return contact_payer_voice(request)
     raise ValueError(f"Unknown channel: {channel!r}")
 
 

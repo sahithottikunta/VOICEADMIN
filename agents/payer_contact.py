@@ -16,6 +16,7 @@ PADecision`` (or its voice twin) and never touches channel internals.
 """
 
 import os
+from typing import Literal
 
 import httpx
 from rich import print as rprint
@@ -154,17 +155,21 @@ def _decision_from_portal_rejection(
     )
 
 
-def _decision_from_ivr(result: IVRResult, trace: list[str]) -> PADecision:
+def _decision_from_ivr(
+    result: IVRResult,
+    trace: list[str],
+    channel: Literal["ivr", "voice"] = "ivr",
+) -> PADecision:
     """Wrap an IVR result into a PADecision.
 
-    Depends only on the IVRResult shape, so the forthcoming Twilio voice variant
-    can reuse it unchanged. The IVR's status/reason are copied honestly - a
-    PENDING_INFO or DENIED is reported as-is, never dressed up as success.
+    Depends only on the IVRResult shape, so the Twilio voice variant reuses it
+    by passing ``channel="voice"``. The IVR's status/reason are copied honestly -
+    a PENDING_INFO or DENIED is reported as-is, never dressed up as success.
     """
     return PADecision(
         status=result.status,
         reference_number=result.reference_number,
-        channel_used="ivr",
+        channel_used=channel,
         trace=trace,
         reason=result.reason,
     )
