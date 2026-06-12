@@ -7,12 +7,24 @@
 - Key design decisions: deterministic IVR text simulation (real telephony is a deliberate Sunday addition); 4xx → PENDING_INFO no-fallback; channel-prefixed traces; orchestrator owns trace assembly
 - Architecture seam ready for tomorrow's voice variant: orchestrator._dispatch has the elif slot; payer_contact._decision_from_ivr is reusable; run.py's --channel already accepts "voice"
 
-**Sunday plan**
-- Build agents/voice_payer_contact.py using Twilio (TwiML <Say> + <Gather>) implementing the same IVR tree
-- Wrap as FastAPI service: POST /prior-auth accepts PDF upload, returns PADecision JSON
-- Containerize with Dockerfile + docker-compose
-- Deploy to Fly.io (free tier)
-- Update README with architecture diagram, demo trace, and live URL
+**Sunday session — partial**
+- Built: agents/voice_payer_contact.py, mock_payer/voice_ivr.py (Twilio + TwiML voice channel)
+- Updated: models.py (channel "voice"), payer_contact.py (channel param on _decision_from_ivr), orchestrator.py (voice dispatch branch)
+- Headless verification: all 4 tests passed (imports, simulated webhook walk, config guard, text-path regression)
+- Live call status: Twilio places call successfully, phone rings, but ngrok free-tier browser-warning interstitial blocks Twilio from receiving TwiML — call sits silent. Fix is known: restart ngrok with `--request-header-add="ngrok-skip-browser-warning:true"` flag, OR claim a free static domain.
+
+**Resume here next session**
+1. Restart ngrok with bypass header (or static domain)
+2. Update VOICE_WEBHOOK_BASE_URL in .env to the new URL
+3. Re-run: python run.py --input sample_data/sample_note.pdf --channel voice
+4. Pickup phone, press 2 / 12345# / 1 / 70551# at the prompts
+5. Expect APPROVED via voice with reference VOICE-12345-70551
+
+**Remaining roadmap**
+- Block 2: FastAPI wrapper around run.py logic + Dockerfile + docker-compose
+- Block 3: Fly.io deployment, get live public URL
+- Block 4: README with architecture diagram + push to GitHub
+- This week: CI/CD (GitHub Actions), Azure deployment, observability, blog post
 
 ## Project Goal
 A weekend demo project that simulates a multi-agent system for handling healthcare Prior Authorization (PA) requests. Given a clinical note (PDF), the system extracts structured info, contacts a mock insurance payer (via API or simulated IVR fallback), and returns an approval decision. This is a portfolio piece, not production code.
